@@ -13,7 +13,7 @@
  *  - ne détectes pas les spams
  *  - ne détectes pas les gros cons non plus
  *  - n'empêche pas le bruteforcing
- *  - ne fais pas le café
+ *  - ne fais pas le café !
  * 
  * INSTALLATION
  * Pour qu'un fichier PHP soit lu, il doit être interprété par un serveur PHP donc ça ne fonctionnera pas sur ton PC, 
