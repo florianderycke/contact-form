@@ -30,9 +30,11 @@
  * 
  */
 
+require 'contact-config.php';
+ 
 // données configurable
-$email_subject = 'Demande de contact';
-$email_to = 'supercrocodile@gmail.com'; // ton email
+$email_subject = $config['contact']['email_subject'];
+$email_to = $config['contact']['email_to']; // ton email
 $form_filename = 'contact.php'; // si tu renommes la page contenant ton formulaire
 
 // regex (expression régulière) pour valider le format d'une adresse email
