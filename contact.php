@@ -10,7 +10,7 @@
 	<meta name="description" content="Me contacter">
 	
 </head>
-<body id="clustercarbone">
+<body>
 
 	<?= get_return() ?>
 
