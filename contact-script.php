@@ -97,8 +97,8 @@ if(isset($_POST['contact']))
 	;
 	$email_headers = 
 		'From: '.$email_from.
-		((isset($email_bcc))?
-		"\r\n".'Bcc: '.$email_bcc
+		((isset($config['contact']['email_bcc']))?
+		"\r\n".'Bcc: '.$config['contact']['email_bcc']
 		:null).
 		"\r\n".'MIME-Version: 1.0'. 
 		"\r\n".'Content-type: text/plain; charset=UTF-8'
