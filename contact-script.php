@@ -10,32 +10,13 @@
  *  - stocke les données et les réaffiche dans le formulaire si les données sont incomplètes
  * 
  * Ce que fais le script :
- *  - ne détectes pas les spams
- *  - ne détectes pas les gros cons non plus
- *  - n'empêche pas le bruteforcing
+ *  - ne détecte pas les spams
+ *  - n'empêche pas les envois abusifs
  *  - ne fais pas le café !
- * 
- * INSTALLATION
- * Pour qu'un fichier PHP soit lu, il doit être interprété par un serveur PHP donc ça ne fonctionnera pas sur ton PC, 
- * sauf si tu installes un serveur (par exemple WAMP) et que tu y glisses tes fichiers.
- * Tu peux personnaliser certains messages mais attention à ne pas modifier le code.
- * Mais pour commencer, renseigne ton email (ligne 35).
- * 
- * ATTENTION
- * Le script utilise les sessions, ça veut dire qu'il faut que session_start() 
- * soit executé avant tout affichage html, et que tes fichiers soient encodés en UTF8 (sans BOM).
- * Si ce n'est pas le cas, tu auras une jolie erreur et ça ne fonctionnera pas.
- * donc place tout le code PHP en haut de page sans aucun espace ou saut de ligne avant, 
- * et enregistré dans des fichiers renommés en ".php".
  * 
  */
 
 require 'contact-config.php';
- 
-// données configurable
-$email_subject = $config['contact']['email_subject'];
-$email_to = $config['contact']['email_to']; // ton email
-$form_filename = 'contact.php'; // si tu renommes la page contenant ton formulaire
 
 // regex (expression régulière) pour valider le format d'une adresse email
 $pattern_email = '`^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$`i';
@@ -46,7 +27,7 @@ session_start();
 function set_return($message)
 {
 	$_SESSION['notification'] = $message;
-	header('Location: '.$form_filename);
+	header('Location: contact.php');
 	exit;
 }
 
@@ -66,7 +47,7 @@ function get_contact_data($varname)
 {
 	if(isset($_POST['contact'][$varname])) // en priorité si elle provient directement du formulaire
 	{
-		$value =  trim(htmlspecialchars($_POST['contact'][$varname])); // on traite les données pour éviter d'exécuter du code malicieux ou d'afficher des images pourries ou toute sort de contenu html (mais n'évite pas les spams)
+		$value =  trim(htmlspecialchars($_POST['contact'][$varname]));
 		$_SESSION['contact'][$varname] = $value; // on sauvegarde les données en session dans le cas où elles seraient incomplètes
 		return $value;
 	}
@@ -82,42 +63,44 @@ function get_contact_data($varname)
 }
 
 // récupération des données
-$email_from = get_contact_data('email_from');
-$content = get_contact_data('content');
+$contact = array(
+	'email_from' => get_contact_data('email_from'),
+	'content' => get_contact_data('content')
+);
 
-// Si des données sont envoyées via le formulaire
+// si des données sont envoyées via le formulaire
 if(isset($_POST['contact']))
 {
-	// on prépare le corps de l'email, puis de l'entête
-	$email_object = 
-		'# Message : '."\n\n".$content."\n\n".
-		"\n".'# Email : '.$email_from.
-		"\n".'# Posté le : '.date('Y-m-d à H:i:s').
-		"\n".'# IP : '.$_SERVER['REMOTE_ADDR']
-	;
-	$email_headers = 
-		'From: '.$email_from.
-		((isset($config['contact']['email_bcc']))?
-		"\r\n".'Bcc: '.$config['contact']['email_bcc']
-		:null).
-		"\r\n".'MIME-Version: 1.0'. 
-		"\r\n".'Content-type: text/plain; charset=UTF-8'
-	;
-	
 	// on vérifie la validité de l'email
-	if(!preg_match($pattern_email, $email_from))
+	if(!preg_match($pattern_email, $contact['email_from']))
 	{
 		set_return('Veuillez vérifier votre email');
 	}
 	
 	// on vérifie qu'on envoie pas un message vide
-	if(empty($content))
+	if(empty($contact['content']))
 	{
 		set_return('Pas de message');
 	}
 	
+	// préparation du contenu de l'email
+	$email = array(
+		'to' => $config['contact']['email_to'],
+		'subject' => $config['contact']['email_subject'],
+		'object' => 
+			'# Message : '."\n\n".$contact['content']."\n\n".
+			"\n".'# Email : '.$contact['email_from'].
+			"\n".'# Posté le : '.date('Y-m-d à H:i:s').
+			"\n".'# IP : '.$_SERVER['REMOTE_ADDR']
+		,
+		'headers' => 
+			'From: '.$email_from.
+			"\r\n".'MIME-Version: 1.0'. 
+			"\r\n".'Content-type: text/plain; charset=UTF-8'
+	);
+	
 	// On envoie le mail
-	if(mail($email_to, $email_subject, $email_object, $email_headers)) // voir documentation function mail()
+	if(mail($email['to'], $email['subject'], $email['object'], $email['headers']))
 	{
 		$_SESSION['contact'] = null; // on efface les données en session
 		set_return('Message envoyé');
