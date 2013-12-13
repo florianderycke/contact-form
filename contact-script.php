@@ -90,12 +90,16 @@ if(isset($_POST['contact']))
 {
 	// on prépare le corps de l'email, puis de l'entête
 	$email_object = 
-		"# Message : \n\n".$content."\n\n".
-		"\n# Email : ".$email_from.
-		"\n# Posté le : ".date('Y-m-d à H:i:s').
-		"\n# IP : ".$_SERVER['REMOTE_ADDR']
+		'# Message : '."\n\n".$content."\n\n".
+		"\n".'# Email : '.$email_from.
+		"\n".'# Posté le : '.date('Y-m-d à H:i:s').
+		"\n".'# IP : '.$_SERVER['REMOTE_ADDR']
 	;
-	$email_headers = "From: ".$email_from;
+	$email_headers = 
+		'From: '.$email_from.
+		"\r\n".'MIME-Version: 1.0'. 
+		"\r\n".'Content-type: text/plain; charset=UTF-8'
+	;
 	
 	// on vérifie la validité de l'email
 	if(!preg_match($pattern_email, $email_from))
